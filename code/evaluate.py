@@ -12,11 +12,12 @@ def evaluate(repo_folder, eval_data):
     hit_count = 0
     for item in eval_data:
         query = item.get('question')
-        expected_files = set(item.get('files', []))
+        expected_files = item.get('files', [])
+        expected_files = set([os.path.join(repo_folder, file) for file in expected_files])
+        
         ret_files = set(query_index(query, embeddings, model, chunk_to_file))
+        
         if expected_files.intersection(ret_files):
-            print(ret_files)
-            print(expected_files)
             hit_count += 1
     recall_at_10 = hit_count / total if total > 0 else 0
     print(f'Recall@10: {recall_at_10:.2f}')

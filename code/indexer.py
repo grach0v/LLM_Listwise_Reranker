@@ -11,13 +11,17 @@ def clone_repo(repo_url, repo_folder):
     else:
         print('Repository already cloned.')
 
-def get_all_files(repo_folder):
-    # Retrieve all code files (filter by extension if needed)
+def get_all_files(repo_folder, allowed_extensions=None):
+    set_extensions = set(allowed_extensions) if allowed_extensions is not None else set()
+    # Retrieve all code files or filter by allowed extensions if provided
     file_list = []
     for root, dirs, files in os.walk(repo_folder):
         for file in files:
-            # Consider typical code file extensions (*.py, *.c, *.cpp, *.js, *.java, *.ts, *.go, *.rb, '.sh')):
-            file_list.append(os.path.join(root, file))
+            ext_appeared = file.split('.')[-1] in set_extensions
+
+            if allowed_extensions is None or ext_appeared:
+                file_list.append(os.path.join(root, file))
+
     return file_list
 
 def read_file_content(file_path):
@@ -27,8 +31,8 @@ def read_file_content(file_path):
     except Exception:
         return ""
 
-def build_index(repo_folder):
-    file_paths = get_all_files(repo_folder)
+def build_index(repo_folder, allowed_extensions=None):
+    file_paths = get_all_files(repo_folder, allowed_extensions)
     print(f'Found {len(file_paths)} files.')
     chunker = TextChunker(chunk_size=512, overlap=50)    # adjust parameters as needed
     embed_model = EmbeddingModelWrapper(mode='local', model_name='microsoft/graphcodebert-base')
